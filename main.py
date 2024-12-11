@@ -1,7 +1,7 @@
 from module import Module
 from study_time import StudyTime
 from study_program import StudyProgram
-from database import get_connection
+from database import Database
 
 
 def update_modules():
@@ -17,7 +17,7 @@ def update_modules():
 
 def update_study_time():
     # Lade die aktuelle StudyTime aus der Datenbank
-    conn = get_connection()
+    conn = Database.get_connection()
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM StudyTime;')
     row = cursor.fetchone()
@@ -51,7 +51,7 @@ if __name__ == "__main__":
         study_program.update_collected_ects()
         study_program.display_progress()
 
-        total_ects_input = input("Hat sich an deiner Gesamt-ECTS eetwas geändert, dann gib hier den neuen Wert ein? (drücke Enter, um aktuellen Wert beizubehalten): ")
+        total_ects_input = input("Hat sich an deiner Gesamt-ECTS etwas geändert, dann gib hier den neuen Wert ein? (drücke Enter, um aktuellen Wert beizubehalten): ")
 
         if total_ects_input.strip():  # Überprüfen, ob die Eingabe nicht leer ist
             new_total_ects = float(total_ects_input)

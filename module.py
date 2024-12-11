@@ -1,4 +1,5 @@
 import sqlite3
+from database import Database
 
 class Module:
     def __init__(self, module_id=None, module_name=None, grade=0.0, status="Pending", ects=5, study_program_id=None):
@@ -11,22 +12,14 @@ class Module:
 
     @classmethod
     def from_db(cls, module_id):
-        conn = sqlite3.connect('StudyDashboard.sql')
-        cursor = conn.cursor()
-        cursor.execute('SELECT * FROM Module WHERE id = ?;', (module_id,))
-        row = cursor.fetchone()
-        conn.close()
+        row = Database.fetch_one('SELECT * FROM Module WHERE id = ?;', (module_id,))
         if row:
             return cls(*row)
         return None
 
     @classmethod
     def fetch_all(cls):
-        conn = sqlite3.connect('StudyDashboard.sql')
-        cursor = conn.cursor()
-        cursor.execute('SELECT * FROM Module;')
-        rows = cursor.fetchall()
-        conn.close()
+        rows = Database.fetch_all('SELECT * FROM Module;')
         return [cls(*row) for row in rows]
 
     def display(self):
@@ -68,54 +61,7 @@ class Module:
                 f"Current status is '{self.status}'. Gib einen neuen Status ein (In Progress, Done, Pending; oder drücke Enter um zu überspringen): ")
             if new_status in valid_statuses or new_status == "":
                 return new_status if new_status else None  # Wenn leer, behalte den aktuellen Status
-            print(f"Üngültig bitte verwende: {', '.join(valid_statuses)}")
+            print(f"Ungültig, bitte verwende: {', '.join(valid_statuses)}")
 
     def save_to_db(self):
-        conn = sqlite3.connect('StudyDashboard.sql')
-        cursor = conn.cursor()
-        cursor.execute('''UPDATE Module SET module_name = ?, grade = ?, status = ?, ects = ?, study_program_id = ? 
-                          WHERE id = ?;''',
-                       (self.module_name, self.grade, self.status, self.ects, self.study_program_id, self.module_id))
-        conn.commit()
-        conn.close()
-        print("Module wurde geupdated.")
-
-def update_modules():
-    modules = Module.fetch_all()
-
-    while True:
-        edit_done = input("Möchtest du Module mit dem Status 'Done' bearbeiten? (yes/no): ").strip().lower()
-        if edit_done in ['yes', 'no']:
-            break
-        print("Üngültig bitte verwende 'yes' or 'no'.")
-
-    if edit_done == 'yes':
-        for module in modules:
-            if module.status == "Done":
-                module.set_grade_and_status()
-
-    while True:
-        edit_in_progress = input("Möchtest du Module mit dem Status 'In Progress' bearbeiten? (yes/no): ").strip().lower()
-        if edit_in_progress in ['yes', 'no']:
-            break
-        print("Üngültig bitte verwende 'yes' or 'no'.")
-
-    if edit_in_progress == 'yes':
-        for module in modules:
-            if module.status == "In Progress":
-                module.set_grade_and_status()
-
-    while True:
-        edit_pending = input("Möchtest du Module mit dem Status 'Pending' bearbeiten? (yes/no): ").strip().lower()
-        if edit_pending in ['yes', 'no']:
-            break
-        print("Üngültig bitte verwende 'yes' or 'no'.")
-
-    if edit_pending == 'yes':
-        for module in modules:
-            if module.status == "Pending":
-                module.set_grade_and_status()
-
-# Aufruf der Funktion, um die Module zu aktualisieren
-if __name__ == "__main__":
-    update_modules()
+        Database.execute('''UPDATE Module SET module_name = ?, grade = ?, status = ?, ect''')

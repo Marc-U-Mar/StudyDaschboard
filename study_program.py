@@ -1,5 +1,6 @@
 import sqlite3
 from datetime import datetime
+from database import Database
 
 class StudyProgram:
     def __init__(self, program_id=None, program_name=None, current_gpa=0.0, total_ects=0, collected_ects=0,
@@ -14,11 +15,7 @@ class StudyProgram:
 
     @classmethod
     def from_db(cls, program_id):
-        conn = sqlite3.connect('StudyDashboard.sql')
-        cursor = conn.cursor()
-        cursor.execute('SELECT * FROM StudyProgram WHERE id = ?;', (program_id,))
-        row = cursor.fetchone()
-        conn.close()
+        row = Database.fetch_one('SELECT * FROM StudyProgram WHERE id = ?;', (program_id,))
         if row:
             return cls(*row)
         return None
@@ -30,85 +27,46 @@ class StudyProgram:
 
     @staticmethod
     def calculate_done_modules_gpa():
-        # Berechnet den Durchschnitt der GPA-Werte für Module mit Status 'Done'.
-        conn = sqlite3.connect('StudyDashboard.sql')
-        cursor = conn.cursor()
-
-        # Abfrage, um den Notendurchschnitt
-        cursor.execute('''
+        result = Database.fetch_one('''
                 SELECT AVG(grade) FROM Module
                 WHERE status = 'Done' AND grade > 0.0
             ''')
-
-        # Ergebnis abrufen
-        average_gpa = cursor.fetchone()[0]
-        conn.close()
-
-        # Überprüfen, ob die Durchschnittsnote gefunden wurde
-        if average_gpa is not None:
-            print(f"Durchschnitt der Noten für deine Module lautet: {average_gpa:.2f}")
-            return average_gpa
-        else:
-            print("Keine Module mit dem Status 'Done' gefunden.")
-            return None
+        if result:
+            average_gpa = result[0]
+            if average_gpa is not None:
+                print(f"Durchschnitt der Noten für deine Module lautet: {average_gpa:.2f}")
+                return average_gpa
+            else:
+                print("Keine Module mit dem Status 'Done' gefunden.")
+                return None
 
     def update_gpa(self):
-        # Aktualisiert den Durchschnitt in der Datenbank
         average_gpa = self.calculate_done_modules_gpa()
         if average_gpa is not None:
-            conn = sqlite3.connect('StudyDashboard.sql')
-            cursor = conn.cursor()
-            cursor.execute('''
+            Database.execute('''
                        UPDATE StudyProgram SET current_gpa = ? WHERE id = ?
                    ''', (average_gpa, self.program_id))
 
-            conn.commit()
-            conn.close()
-
     def update_total_ects(self, new_total_ects):
         self.total_ects = new_total_ects
-        conn = sqlite3.connect('StudyDashboard.sql')
-        cursor = conn.cursor()
-        cursor.execute('''
+        Database.execute('''
                UPDATE StudyProgram SET total_ects = ? WHERE id = ?
            ''', (self.total_ects, self.program_id))
-        conn.commit()
-        conn.close()
         print(f"Total ECTS wurde auf {self.total_ects} aktualisiert.")
 
     def update_collected_ects(self):
-        conn = sqlite3.connect('StudyDashboard.sql')
-        cursor = conn.cursor()
-
-        # Abfrage der gesammelten ECTS aus den abgeschlossenen Modulen
-        cursor.execute('''
+        result = Database.fetch_one('''
                SELECT SUM(ects) FROM Module
                WHERE status = 'Done';
            ''')
-        collected_ects = cursor.fetchone()[0] or 0  # Wenn keine Ergebnisse, setze auf 0
-        conn.close()
-
-        self.collected_ects = collected_ects
-
-        # Update in der Datenbank
-        conn = sqlite3.connect('StudyDashboard.sql')
-        cursor = conn.cursor()
-        cursor.execute('''
+        self.collected_ects = result[0] or 0
+        Database.execute('''
                UPDATE StudyProgram SET collected_ects = ? WHERE id = ?
            ''', (self.collected_ects, self.program_id))
-        conn.commit()
-        conn.close()
-
         print(f"Du hast aktuell {self.collected_ects} ECTS.")
 
     def display_in_progress_modules(self):
-        conn = sqlite3.connect('StudyDashboard.sql')
-        cursor = conn.cursor()
-
-        cursor.execute('SELECT module_name FROM Module WHERE status = "In Progress";')
-        rows = cursor.fetchall()
-        conn.close()
-
+        rows = Database.fetch_all('SELECT module_name FROM Module WHERE status = "In Progress";')
         if rows:
             print("Module, welche aktuell in Bearbeitung sind:")
             for row in rows:
@@ -142,7 +100,7 @@ class StudyProgram:
             # Berechnung des durchschnittlichen Modulaufwands pro Monat
             if remaining_months > 0:
                 self.monthly_module_load = total_modules_in_progress / remaining_months
-                print(f"Du muss noch durchschnittlich {self.monthly_module_load:.2f} Module pro Monat abschließen")
+                print(f"Du musst noch durchschnittlich {self.monthly_module_load:.2f} Module pro Monat abschließen.")
                 self.update_monthly_module_load_in_db()
             else:
                 print("Du hast leider keinen vollen Monat mehr Zeit.")
