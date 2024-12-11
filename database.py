@@ -30,3 +30,8 @@ class Database:
         cursor.execute(query, params)
         conn.commit()
         conn.close()
+
+    @staticmethod
+    def save_all_entities(entities):
+        for entity in entities:
+            entity.save_to_db()

@@ -56,6 +56,6 @@ class StudyTime(DatabaseEntity):
 
     def save_to_db(self):
         Database.execute('''UPDATE StudyTime SET start_date = ?, standard_duration_months = ?, current_semester = ? 
-                            WHERE id = ?;''',
+                                    WHERE id = ?;''',
                          (self.start_date, self.standard_duration_months, self.current_semester, self.study_time_id))
         print(f"Study Time mit ID {self.study_time_id} wurde erfolgreich gespeichert.")

@@ -54,5 +54,5 @@ class Module(DatabaseEntity):
 
     def save_to_db(self):
         Database.execute('''UPDATE Module SET module_name = ?, grade = ?, status = ?, ects = ?, study_program_id = ? WHERE id = ?;''',
-                         (self.module_name, self.grade, self.status, self.ects, self.study_program_id, self.module_id))
+            (self.module_name, self.grade, self.status, self.ects, self.study_program_id, self.module_id))
         print(f"Module mit ID {self.module_id} wurde erfolgreich gespeichert.")

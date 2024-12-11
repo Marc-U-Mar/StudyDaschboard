@@ -2,7 +2,7 @@ from database import Database
 
 class DatabaseEntity:
     def save_to_db(self):
-        raise NotImplementedError("Die Methode save_to_db muss in der Unterklasse implementiert werden.")
+        raise NotImplementedError("Die Methode 'save_to_db' muss in der Unterklasse implementiert werden.")
 
     @classmethod
     def from_db(cls, entity_id):

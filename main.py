@@ -31,6 +31,14 @@ def update_study_time():
 
 
 if __name__ == "__main__":
+    # Alle Entitäten abrufen
+    modules = Module.fetch_all()
+    study_programs = StudyProgram.fetch_all()
+    study_times = StudyTime.fetch_all()
+
+    # Alle Entitäten in einer Liste kombinieren
+    all_entities = modules + study_programs + study_times
+
     # Aktualisiere die Module
     update_modules()
 
@@ -60,3 +68,6 @@ if __name__ == "__main__":
             print(f"Du musst insgesamt {study_program.total_ects} ECTS erreichen.")
 
         study_program.calculate_monthly_module_load()
+
+        # Alle Entitäten in der Datenbank speichern
+        Database.save_all_entities(all_entities)

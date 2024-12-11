@@ -16,8 +16,9 @@ class StudyProgram(DatabaseEntity):
 
     def save_to_db(self):
         Database.execute('''UPDATE StudyProgram SET program_name = ?, current_gpa = ?, total_ects = ?, collected_ects = ?, 
-                            monthly_module_load = ?, study_time_id = ? WHERE id = ?;''',
-                         (self.program_name, self.current_gpa, self.total_ects, self.collected_ects, self.monthly_module_load, self.study_time_id, self.program_id))
+                                    monthly_module_load = ?, study_time_id = ? WHERE id = ?;''',
+                         (self.program_name, self.current_gpa, self.total_ects, self.collected_ects,
+                          self.monthly_module_load, self.study_time_id, self.program_id))
         print(f"Study Program mit ID {self.program_id} wurde erfolgreich gespeichert.")
 
     def display(self):
