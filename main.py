@@ -60,4 +60,3 @@ if __name__ == "__main__":
             print(f"Du musst insgesamt {study_program.total_ects} ECTS erreichen.")
 
         study_program.calculate_monthly_module_load()
-
