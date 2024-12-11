@@ -1,8 +1,9 @@
 import sqlite3
-from datetime import datetime
 from database import Database
+from datetime import datetime
+from database_entity import DatabaseEntity
 
-class StudyProgram:
+class StudyProgram(DatabaseEntity):
     def __init__(self, program_id=None, program_name=None, current_gpa=0.0, total_ects=0, collected_ects=0,
                  monthly_module_load=0, study_time_id=None):
         self.program_id = program_id
@@ -13,12 +14,11 @@ class StudyProgram:
         self.monthly_module_load = monthly_module_load
         self.study_time_id = study_time_id
 
-    @classmethod
-    def from_db(cls, program_id):
-        row = Database.fetch_one('SELECT * FROM StudyProgram WHERE id = ?;', (program_id,))
-        if row:
-            return cls(*row)
-        return None
+    def save_to_db(self):
+        Database.execute('''UPDATE StudyProgram SET program_name = ?, current_gpa = ?, total_ects = ?, collected_ects = ?, 
+                            monthly_module_load = ?, study_time_id = ? WHERE id = ?;''',
+                         (self.program_name, self.current_gpa, self.total_ects, self.collected_ects, self.monthly_module_load, self.study_time_id, self.program_id))
+        print(f"Study Program mit ID {self.program_id} wurde erfolgreich gespeichert.")
 
     def display(self):
         print(f"Program ID: {self.program_id}, Name: {self.program_name}, GPA: {self.current_gpa}, "
@@ -27,10 +27,7 @@ class StudyProgram:
 
     @staticmethod
     def calculate_done_modules_gpa():
-        result = Database.fetch_one('''
-                SELECT AVG(grade) FROM Module
-                WHERE status = 'Done' AND grade > 0.0
-            ''')
+        result = Database.fetch_one('''SELECT AVG(grade) FROM Module WHERE status = 'Done' AND grade > 0.0''')
         if result:
             average_gpa = result[0]
             if average_gpa is not None:
@@ -43,26 +40,17 @@ class StudyProgram:
     def update_gpa(self):
         average_gpa = self.calculate_done_modules_gpa()
         if average_gpa is not None:
-            Database.execute('''
-                       UPDATE StudyProgram SET current_gpa = ? WHERE id = ?
-                   ''', (average_gpa, self.program_id))
+            Database.execute('''UPDATE StudyProgram SET current_gpa = ? WHERE id = ?''', (average_gpa, self.program_id))
 
     def update_total_ects(self, new_total_ects):
         self.total_ects = new_total_ects
-        Database.execute('''
-               UPDATE StudyProgram SET total_ects = ? WHERE id = ?
-           ''', (self.total_ects, self.program_id))
+        Database.execute('''UPDATE StudyProgram SET total_ects = ? WHERE id = ?''', (self.total_ects, self.program_id))
         print(f"Total ECTS wurde auf {self.total_ects} aktualisiert.")
 
     def update_collected_ects(self):
-        result = Database.fetch_one('''
-               SELECT SUM(ects) FROM Module
-               WHERE status = 'Done';
-           ''')
+        result = Database.fetch_one('''SELECT SUM(ects) FROM Module WHERE status = 'Done';''')
         self.collected_ects = result[0] or 0
-        Database.execute('''
-               UPDATE StudyProgram SET collected_ects = ? WHERE id = ?
-           ''', (self.collected_ects, self.program_id))
+        Database.execute('''UPDATE StudyProgram SET collected_ects = ? WHERE id = ?''', (self.collected_ects, self.program_id))
         print(f"Du hast aktuell {self.collected_ects} ECTS.")
 
     def display_in_progress_modules(self):

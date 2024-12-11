@@ -1,7 +1,8 @@
 import sqlite3
 from database import Database
+from database_entity import DatabaseEntity
 
-class Module:
+class Module(DatabaseEntity):
     def __init__(self, module_id=None, module_name=None, grade=0.0, status="Pending", ects=5, study_program_id=None):
         self.module_id = module_id
         self.module_name = module_name
@@ -9,18 +10,6 @@ class Module:
         self.status = status
         self.ects = ects
         self.study_program_id = study_program_id
-
-    @classmethod
-    def from_db(cls, module_id):
-        row = Database.fetch_one('SELECT * FROM Module WHERE id = ?;', (module_id,))
-        if row:
-            return cls(*row)
-        return None
-
-    @classmethod
-    def fetch_all(cls):
-        rows = Database.fetch_all('SELECT * FROM Module;')
-        return [cls(*row) for row in rows]
 
     def display(self):
         print(f"Module ID: {self.module_id}, Name: {self.module_name}, Grade: {self.grade}, "
@@ -64,4 +53,6 @@ class Module:
             print(f"Ungültig, bitte verwende: {', '.join(valid_statuses)}")
 
     def save_to_db(self):
-        Database.execute('''UPDATE Module SET module_name = ?, grade = ?, status = ?, ect''')
+        Database.execute('''UPDATE Module SET module_name = ?, grade = ?, status = ?, ects = ?, study_program_id = ? WHERE id = ?;''',
+                         (self.module_name, self.grade, self.status, self.ects, self.study_program_id, self.module_id))
+        print(f"Module mit ID {self.module_id} wurde erfolgreich gespeichert.")

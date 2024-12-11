@@ -1,6 +1,7 @@
 from database import Database
+from database_entity import DatabaseEntity
 
-class StudyTime:
+class StudyTime(DatabaseEntity):
     def __init__(self, study_time_id=None, start_date=None, end_date=None, standard_duration_months=None,
                  current_semester=1):
         self.study_time_id = study_time_id
@@ -46,14 +47,15 @@ class StudyTime:
         print(f"Study Time ID: {self.study_time_id}, Start Date: {self.start_date}, End Date: {self.end_date}, "
               f"Standard Duration: {self.standard_duration_months}, Current Semester: {self.current_semester}")
 
+    """
     def calculate_end_date(self, start_date, duration_months):
         # Berechnung des Enddatums basierend auf dem Startdatum und der Dauer in Monaten
         # ...
         pass
+    """
 
     def save_to_db(self):
-        Database.execute('''UPDATE StudyTime 
-                          SET start_date = ?, standard_duration_months = ?, current_semester = ? 
-                          WHERE id = ?;''',
-                       (self.start_date, self.standard_duration_months, self.current_semester, self.study_time_id))
-        print("Studienzeit wurde erfolgreich aktualisiert.")
+        Database.execute('''UPDATE StudyTime SET start_date = ?, standard_duration_months = ?, current_semester = ? 
+                            WHERE id = ?;''',
+                         (self.start_date, self.standard_duration_months, self.current_semester, self.study_time_id))
+        print(f"Study Time mit ID {self.study_time_id} wurde erfolgreich gespeichert.")
