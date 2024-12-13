@@ -2,6 +2,9 @@ import sqlite3
 from database import Database
 from datetime import datetime
 from database_entity import DatabaseEntity
+from module import Module
+from study_time import StudyTime
+
 
 class StudyProgram(DatabaseEntity):
     def __init__(self, program_id=None, program_name=None, current_gpa=0.0, total_ects=0, collected_ects=0,
@@ -111,3 +114,22 @@ class StudyProgram(DatabaseEntity):
             return
         progress_percentage = (self.collected_ects / self.total_ects) * 100
         print(f"Dein Studienfortschritt auf Grundlage der ECTS beträgt {progress_percentage:.2f}%.")
+
+    def get_study_time(self):
+        study_time = StudyTime.from_db(self.study_time_id)
+        if study_time:
+            return study_time.start_date, study_time.end_date, study_time.standard_duration_months
+        else:
+            return None, None, None
+
+    def get_module_progress(self):
+        total_modules = len(Module.fetch_all())  # Alle Module abfragen
+        completed_modules = len([m for m in Module.fetch_all() if m.status == "Done"])
+
+        if total_modules == 0:
+            return 0  # Verhindert Division durch null, falls keine Module vorhanden sind.
+
+        return (completed_modules / total_modules) * 100
+
+    def get_required_ects(self):
+        return self.total_ects
