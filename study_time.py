@@ -30,7 +30,7 @@ class StudyTime(DatabaseEntity):
         if new_start_date:
             self.start_date = new_start_date
 
-        new_duration = input("Bitte gib deine Regelstudienzeit ein oder drücke Enter: ")
+        new_duration = input("Bitte gib deine Regelstudienzeit in Monaten ein oder drücke Enter: ")
         if new_duration:
             self.standard_duration_months = int(new_duration)
 

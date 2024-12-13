@@ -25,7 +25,7 @@ def update_study_time():
 
     if row:
         study_time = StudyTime(*row)
-        study_time.update_study_time()  # Ändere den Funktionsaufruf
+        study_time.update_study_time()
     else:
         print("No study time data found in the database.")
 
