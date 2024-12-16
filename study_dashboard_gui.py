@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import datetime
+
+import study_time
 from database import Database
 from module import Module
 from study_program import StudyProgram
@@ -118,8 +120,6 @@ class StudyDashboardGUI:
 
         # Linke Spalte (Durchschnitt und gewünschter Durchschnitt)
         tk.Label(stats_left_frame, text=f"Durchschnitt: {study_program.current_gpa:.2f}").pack(anchor="w")
-        tk.Label(stats_left_frame, text=f"Gewünschter Durchschnitt: {study_program.gpa_goal:.2f}").pack(
-            anchor="w")
 
         # Rechte Spalte (ECTS gesammelt und benötigte ECTS)
         required_ects = study_program.get_required_ects()
@@ -174,6 +174,47 @@ class StudyDashboardGUI:
             save_button = tk.Button(frame, text="Speichern", command=lambda m=module, ge=grade_entry, se=status_entry: self.save_changes(m, ge, se))
             save_button.pack(side=tk.LEFT, padx=5)
 
+        # Lade aktuelle Studienzeit-Daten
+        study_program = StudyProgram.from_db(1)  # Beispiel: Holen der StudyProgram-Daten, angenommen ID = 1
+        study_time = StudyTime.from_db(study_program.study_time_id) if study_program else None
+
+        if study_time:
+            # Formular für Studienbeginn, Studienende und gewünschten Durchschnitt
+            frame = tk.Frame(self.root)
+            frame.pack(pady=5, fill=tk.X)
+
+            # Studienbeginn
+            tk.Label(frame, text="Studienbeginn:").pack(side=tk.LEFT, padx=10)
+            start_date_entry = tk.Entry(frame)
+
+            # Falls start_date ein datetime-Objekt ist, wandle es in das gewünschte Format um
+            if isinstance(study_time.start_date, datetime):
+                start_date_entry.insert(0, study_time.start_date.strftime("%Y-%m-%d"))
+            else:
+                start_date_entry.insert(0, study_time.start_date)  # Falls es bereits ein String ist
+
+            start_date_entry.pack(side=tk.LEFT, padx=5)
+
+            # Studienende
+            tk.Label(frame, text="Studienende:").pack(side=tk.LEFT, padx=10)
+            end_date_entry = tk.Entry(frame)
+
+            # Falls end_date ein datetime-Objekt ist, wandle es in das gewünschte Format um
+            if isinstance(study_time.end_date, datetime):
+                end_date_entry.insert(0, study_time.end_date.strftime("%Y-%m-%d"))
+            else:
+                end_date_entry.insert(0, study_time.end_date)  # Falls es bereits ein String ist
+
+            end_date_entry.pack(side=tk.LEFT, padx=5)
+
+            # Speichern-Button für die Änderungen der Studienzeit
+            save_button = tk.Button(frame, text="Speichern",command=lambda: self.save_study_time_changes(
+                study_program, start_date_entry, end_date_entry))
+            save_button.pack(side=tk.LEFT, padx=5)
+
+        else:
+            messagebox.showerror("Fehler", "Keine gültige Studienzeit gefunden.")
+
         # Button, um zur Startseite zurückzukehren
         tk.Button(self.root, text="Zurück zum Dashboard", command=self.show_dashboard).pack(pady=10)
 
@@ -199,6 +240,43 @@ class StudyDashboardGUI:
             print(f"Fehler beim Speichern von Modul {module.module_name}: {str(e)}")
             messagebox.showerror("Fehler",
                                  f"Beim Speichern von {module.module_name} ist ein Fehler aufgetreten: {str(e)}")
+
+    def save_study_time_changes(self, study_time, start_date_entry, end_date_entry):
+        """Speichert die Änderungen für Studienbeginn, Studienende und gewünschten Durchschnitt."""
+        try:
+            # Neue Werte aus den Eingabefeldern holen
+            new_start_date = start_date_entry.get()
+            new_end_date = end_date_entry.get()
+
+            # Datenbank-Update durchführen
+            # Wenn keine neuen Daten eingegeben werden, setze sie auf NULL
+            if new_start_date:
+                new_start_date = datetime.strptime(new_start_date, "%Y-%m-%d")
+            else:
+                new_start_date = None
+
+            if new_end_date:
+                new_end_date = datetime.strptime(new_end_date, "%Y-%m-%d")
+            else:
+                new_end_date = None
+
+            # Update die Studienzeit-Daten und den gewünschten GPA
+            query = """UPDATE StudyTime
+                       SET start_date = ?, end_date = ?
+                       WHERE id = ?"""
+            params = (new_start_date, new_end_date, study_time.study_time_id)
+
+            # Datenbankabfrage ausführen
+            Database.execute(query, params)
+
+            # Bestätigung
+            print(f"Studienzeit und GPA-Ziel wurden erfolgreich gespeichert.")
+            messagebox.showinfo("Erfolg", "Studienzeit und GPA-Ziel wurden erfolgreich gespeichert.")
+
+        except Exception as e:
+            # Fehlerbehandlung
+            print(f"Fehler beim Speichern der Studienzeit-Daten: {str(e)}")
+            messagebox.showerror("Fehler", f"Beim Speichern der Studienzeit-Daten ist ein Fehler aufgetreten: {str(e)}")
 
     def update_data(self):
         try:
