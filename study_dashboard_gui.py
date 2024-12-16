@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import datetime
-import study_time
+from database import Database
 from module import Module
 from study_program import StudyProgram
 from study_time import StudyTime
@@ -13,7 +13,6 @@ class StudyDashboardGUI:
         self.show_dashboard()
 
     def show_dashboard(self):
-        """Zeigt das Haupt-Dashboard mit den aktuellen Daten an."""
         for widget in self.root.winfo_children():
             widget.destroy()
 
@@ -141,7 +140,6 @@ class StudyDashboardGUI:
         tk.Button(self.root, text="Beenden", command=self.root.quit).pack(pady=5)
 
     def show_edit_data_form(self):
-        """Zeigt das Formular zur Bearbeitung der Module und Noten an."""
         for widget in self.root.winfo_children():
             widget.destroy()
 
@@ -172,33 +170,40 @@ class StudyDashboardGUI:
             status_entry.insert(0, module.status)  # Vorbelegung mit dem aktuellen Status
             status_entry.pack(side=tk.LEFT, padx=5)
 
-            # Button zum Speichern der Änderungen für dieses Modul
-            save_button = tk.Button(frame, text="Speichern", command=lambda m=module, ge=grade_entry, se=status_entry: self.save_module_changes(m, ge, se))
-            save_button.pack(side=tk.LEFT, padx=10)
+        # Ein Button zum Speichern aller Änderungen
+        save_button = tk.Button(self.root, text="Speichern", command=lambda: self.save_changes(module, grade_entry, status_entry))
+        save_button.pack(pady=20)
 
         # Button, um zur Startseite zurückzukehren
-        tk.Button(self.root, text="Zurück zum Dashboard", command=self.show_dashboard).pack(pady=20)
+        tk.Button(self.root, text="Zurück zum Dashboard", command=self.show_dashboard).pack(pady=10)
 
-    def save_module_changes(self, module, grade_entry, status_entry):
+    def save_changes(self, module, grade_entry, status_entry):
+        """Speichert die Änderungen für ein einzelnes Modul."""
+        # Neue Werte aus den Eingabefeldern holen
+        new_grade = grade_entry.get()
+        new_status = status_entry.get()
+
+        # Datenbank-Update durchführen
+        query = """UPDATE Module
+                   SET grade = ?, status = ?
+                   WHERE id = ?"""
+        params = (new_grade, new_status, module.module_id)
+
         try:
-            new_grade = grade_entry.get()
-            new_status = status_entry.get()
-
-            # Daten in der Datenbank aktualisieren
-            module.grade = new_grade
-            module.status = new_status
-            module.save()  # Methode zum Speichern des Moduls in der Datenbank
-
-            messagebox.showinfo("Erfolg", f"Änderungen für {module.module_name} erfolgreich gespeichert.")
-            self.show_dashboard()  # Dashboard nach der Änderung neu laden
+            # Wenn execute keine Ausnahme wirft, wurde das Update erfolgreich ausgeführt
+            Database.execute(query, params)
+            print(f"Modul {module.module_name} erfolgreich gespeichert.")
+            messagebox.showinfo("Erfolg", f"Modul {module.module_name} wurde erfolgreich gespeichert.")
         except Exception as e:
-            messagebox.showerror("Fehler", f"Beim Speichern der Änderungen ist ein Fehler aufgetreten: {e}")
+            # Fehlerbehandlung, wenn beim Update ein Fehler auftritt
+            print(f"Fehler beim Speichern von Modul {module.module_name}: {str(e)}")
+            messagebox.showerror("Fehler",
+                                 f"Beim Speichern von {module.module_name} ist ein Fehler aufgetreten: {str(e)}")
 
     def update_data(self):
         try:
             # Hier könnten allgemeine Datenaktualisierungen durchgeführt werden
             messagebox.showinfo("Erfolg", "Daten erfolgreich aktualisiert.")
-            self.show_dashboard()  # Dashboard neu laden, um aktualisierte Daten anzuzeigen
         except Exception as e:
             messagebox.showerror("Fehler", f"Beim Aktualisieren der Daten ist ein Fehler aufgetreten: {e}")
 

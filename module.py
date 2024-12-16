@@ -53,6 +53,19 @@ class Module(DatabaseEntity):
             print(f"Ungültig, bitte verwende: {', '.join(valid_statuses)}")
 
     def save_to_db(self):
-        Database.execute('''UPDATE Module SET module_name = ?, grade = ?, status = ?, ects = ?, study_program_id = ? WHERE id = ?;''',
-            (self.module_name, self.grade, self.status, self.ects, self.study_program_id, self.module_id))
-        print(f"Module mit ID {self.module_id} wurde erfolgreich gespeichert.")
+        try:
+            # Debugging: Zeige die Daten, die gespeichert werden sollen
+            print(
+                f"Speichere Modul: ID={self.module_id}, Name={self.module_name}, Note={self.grade}, Status={self.status}, ECTS={self.ects}, Study Program ID={self.study_program_id}")
+
+            # Führe das Update aus
+            Database.execute(
+                '''UPDATE Module 
+                SET module_name = ?, grade = ?, status = ?, ects = ?, study_program_id = ? 
+                WHERE id = ?;''',
+                (self.module_name, self.grade, self.status, self.ects, self.study_program_id, self.module_id)
+            )
+            print(f"Module mit ID {self.module_id} wurde erfolgreich gespeichert.")
+        except Exception as e:
+            print(f"Fehler beim Speichern des Moduls: {e}")
+            raise
