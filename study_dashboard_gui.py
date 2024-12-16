@@ -20,6 +20,7 @@ class StudyDashboardGUI:
         self.scrollbar = tk.Scrollbar(self.root, orient="vertical", command=self.canvas.yview)
         self.canvas.config(yscrollcommand=self.scrollbar.set)
 
+        # Sicherstellen, dass scrollable_frame nur einmal initialisiert wird
         self.scrollable_frame = tk.Frame(self.canvas)
 
         # Packen der Widgets innerhalb des Canvas
@@ -35,10 +36,29 @@ class StudyDashboardGUI:
         self.show_dashboard()
 
     def show_dashboard(self):
-        for widget in self.scrollable_frame.winfo_children():  # Löscht Widgets nur im scrollable_frame
+        # Sicherstellen, dass das scrollable_frame korrekt existiert
+        if not hasattr(self, 'canvas') or not self.canvas or not hasattr(self, 'scrollable_frame') or not self.scrollable_frame:
+            # Initialisiere 'scrollable_frame' und verwandte Widgets, falls nicht vorhanden
+            self.canvas = tk.Canvas(self.root)
+            self.scrollbar = tk.Scrollbar(self.root, orient="vertical", command=self.canvas.yview)
+            self.canvas.config(yscrollcommand=self.scrollbar.set)
+
+            self.scrollable_frame = tk.Frame(self.canvas)
+
+            self.canvas.pack(side="left", fill="both", expand=True)
+            self.scrollbar.pack(side="right", fill="y")
+            self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+
+            self.scrollable_frame.bind(
+                "<Configure>",
+                lambda e: self.canvas.config(scrollregion=self.canvas.bbox("all"))
+            )
+
+        # Zerstöre alle existierenden Widgets im scrollable_frame, um die Ansicht zu aktualisieren
+        for widget in self.scrollable_frame.winfo_children():
             widget.destroy()
 
-            # Dashboard-Daten laden
+        # Dashboard-Daten laden
         modules = Module.fetch_all()
         study_program = StudyProgram.from_db(1)
 
@@ -48,8 +68,7 @@ class StudyDashboardGUI:
         if study_program:
             start_date, end_date, standard_duration_months = study_program.get_study_time()
             if start_date and end_date:
-                tk.Label(self.scrollable_frame, text=f"Studienbeginn: {start_date} - Studienende: {end_date}").pack(
-                    pady=5)
+                tk.Label(self.scrollable_frame, text=f"Studienbeginn: {start_date} - Studienende: {end_date}").pack(pady=5)
 
                 # Direktes Abrufen der StudyTime-Instanz
                 study_time = StudyTime.from_db(study_program.study_time_id)
@@ -70,8 +89,7 @@ class StudyDashboardGUI:
             header_frame.pack(fill=tk.X, pady=10)
 
             tk.Label(header_frame, text=f"Studienbeginn: {start_date} Studienende: {end_date} "
-                                        f"Restzeit in Monaten: {remaining_months}", font=("Arial", 12)).pack(
-                side=tk.LEFT)
+                                        f"Restzeit in Monaten: {remaining_months}", font=("Arial", 12)).pack(side=tk.LEFT)
 
         # Container für die Modultabelle und die Box nebeneinander
         main_frame = tk.Frame(self.scrollable_frame)
@@ -126,8 +144,7 @@ class StudyDashboardGUI:
         monthly_module_load = study_program.monthly_module_load
         tk.Label(info_frame, text=f"Monatlicher Modulaufwand: {monthly_module_load:.2f} Module",
                  font=("Arial", 12)).pack(pady=5)
-        tk.Label(info_frame, text=f"Fortschritt: {study_program.get_module_progress():.2f}%", font=("Arial", 12)).pack(
-            pady=5)
+        tk.Label(info_frame, text=f"Fortschritt: {study_program.get_module_progress():.2f}%", font=("Arial", 12)).pack(pady=5)
 
         # Durchschnitt, gewünschter Durchschnitt und ECTS-Anforderungen in einem separaten Container
         stats_frame = tk.Frame(self.scrollable_frame)
