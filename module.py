@@ -15,7 +15,7 @@ class Module(DatabaseEntity):
         print(f"Module ID: {self.module_id}, Name: {self.module_name}, Grade: {self.grade}, "
               f"Status: {self.status}, ECTS: {self.ects}, Study Program ID: {self.study_program_id}")
 
-    def input_float(self, prompt):
+    """def input_float(self, prompt):
         while True:
             user_input = input(prompt).strip()
             user_input = user_input.replace(',', '.')  # Ersetze Komma durch Punkt
@@ -23,8 +23,9 @@ class Module(DatabaseEntity):
                 return float(user_input)
             except ValueError:
                 print("Ungültig! Bitte gib eine gültige Zahl ein.")
+                """
 
-    def set_grade_and_status(self):
+    """def set_grade_and_status(self):
         print("Current values:")
         self.display()
 
@@ -42,8 +43,9 @@ class Module(DatabaseEntity):
 
         # Aktualisierung der Datenbank
         self.save_to_db()
+        """
 
-    def get_valid_status(self):
+    """def get_valid_status(self):
         valid_statuses = ["In Progress", "Done", "Pending"]
         while True:
             new_status = input(
@@ -51,10 +53,10 @@ class Module(DatabaseEntity):
             if new_status in valid_statuses or new_status == "":
                 return new_status if new_status else None  # Wenn leer, behalte den aktuellen Status
             print(f"Ungültig, bitte verwende: {', '.join(valid_statuses)}")
+            """
 
     def save_to_db(self):
         try:
-            # Debugging: Zeige die Daten, die gespeichert werden sollen
             print(
                 f"Speichere Modul: ID={self.module_id}, Name={self.module_name}, Note={self.grade}, Status={self.status}, ECTS={self.ects}, Study Program ID={self.study_program_id}")
 

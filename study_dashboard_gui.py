@@ -118,7 +118,7 @@ class StudyDashboardGUI:
 
         # Linke Spalte (Durchschnitt und gewünschter Durchschnitt)
         tk.Label(stats_left_frame, text=f"Durchschnitt: {study_program.current_gpa:.2f}").pack(anchor="w")
-        tk.Label(stats_left_frame, text=f"Gewünschter Durchschnitt: {study_program.current_gpa + 1.0:.2f}").pack(
+        tk.Label(stats_left_frame, text=f"Gewünschter Durchschnitt: {study_program.gpa_goal:.2f}").pack(
             anchor="w")
 
         # Rechte Spalte (ECTS gesammelt und benötigte ECTS)
@@ -170,9 +170,9 @@ class StudyDashboardGUI:
             status_entry.insert(0, module.status)  # Vorbelegung mit dem aktuellen Status
             status_entry.pack(side=tk.LEFT, padx=5)
 
-        # Ein Button zum Speichern aller Änderungen
-        save_button = tk.Button(self.root, text="Speichern", command=lambda: self.save_changes(module, grade_entry, status_entry))
-        save_button.pack(pady=20)
+            # Speichern-Button für jedes Modul, der explizit die aktuellen Eingabewerte übergibt
+            save_button = tk.Button(frame, text="Speichern", command=lambda m=module, ge=grade_entry, se=status_entry: self.save_changes(m, ge, se))
+            save_button.pack(side=tk.LEFT, padx=5)
 
         # Button, um zur Startseite zurückzukehren
         tk.Button(self.root, text="Zurück zum Dashboard", command=self.show_dashboard).pack(pady=10)

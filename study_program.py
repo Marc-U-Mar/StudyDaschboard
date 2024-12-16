@@ -8,7 +8,7 @@ from study_time import StudyTime
 
 class StudyProgram(DatabaseEntity):
     def __init__(self, program_id=None, program_name=None, current_gpa=0.0, total_ects=0, collected_ects=0,
-                 monthly_module_load=0, study_time_id=None):
+                 monthly_module_load=0, study_time_id=None, gpa_goal=2.0):
         self.program_id = program_id
         self.program_name = program_name
         self.current_gpa = current_gpa
@@ -16,6 +16,7 @@ class StudyProgram(DatabaseEntity):
         self.collected_ects = collected_ects
         self.monthly_module_load = monthly_module_load
         self.study_time_id = study_time_id
+        self.gpa_goal = gpa_goal
 
     def save_to_db(self):
         Database.execute('''UPDATE StudyProgram SET program_name = ?, current_gpa = ?, total_ects = ?, collected_ects = ?, 
