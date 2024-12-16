@@ -1,4 +1,4 @@
-import sqlite3
+
 from database import Database
 from database_entity import DatabaseEntity
 

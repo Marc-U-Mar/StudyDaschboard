@@ -1,6 +1,4 @@
-import sqlite3
 from database import Database
-from datetime import datetime
 from database_entity import DatabaseEntity
 from module import Module
 from study_time import StudyTime
