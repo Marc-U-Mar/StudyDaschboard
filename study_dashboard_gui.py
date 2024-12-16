@@ -95,7 +95,6 @@ class StudyDashboardGUI:
 
         # Einfügen der Module in die Tabelle
         for module in modules:
-            # Überprüfe den Status des Moduls und weise den entsprechenden Tag zu
             if module.status == "Done":
                 status_tag = "done"
             elif module.status == "In Progress":
@@ -108,8 +107,8 @@ class StudyDashboardGUI:
             # Füge die Zeile in die Tabelle ein und weise den Tag zu
             module_table.insert("", tk.END, values=(module.module_name, module.ects, module.grade, module.status),
                                 tags=(status_tag,))
-        self.auto_resize_columns(module_table)
 
+        self.auto_resize_columns(module_table)
         module_table.pack(fill=tk.X)
 
         # Box rechts neben der Modultabelle
@@ -198,17 +197,16 @@ class StudyDashboardGUI:
             grade_entry.insert(0, module.grade)  # Vorbelegung mit der aktuellen Note
             grade_entry.pack(side=tk.LEFT, padx=5)
 
-            # Eingabefeld für Status
+            # Dropdown-Menü für Status
             status_label = tk.Label(frame, text="Status:")
             status_label.pack(side=tk.LEFT)
-            status_entry = tk.Entry(frame)
-            status_entry.insert(0, module.status)  # Vorbelegung mit dem aktuellen Status
-            status_entry.pack(side=tk.LEFT, padx=5)
+            status_var = tk.StringVar()
+            status_var.set(module.status)  # Vorbelegung mit dem aktuellen Status
+            status_menu = tk.OptionMenu(frame, status_var, "In Progress", "Done", "Pending")
+            status_menu.pack(side=tk.LEFT, padx=5)
 
             # Speichern-Button für jedes Modul, der explizit die aktuellen Eingabewerte übergibt
-            save_button = tk.Button(frame, text="Speichern",
-                                    command=lambda m=module, ge=grade_entry, se=status_entry: self.save_changes(m, ge,
-                                                                                                                se))
+            save_button = tk.Button(frame, text="Speichern", command=lambda m=module, ge=grade_entry, sv=status_var: self.save_changes(m, ge, sv))
             save_button.pack(side=tk.LEFT, padx=5)
 
         # Lade aktuelle Studienzeit-Daten
@@ -260,27 +258,21 @@ class StudyDashboardGUI:
         self.canvas.config(scrollregion=self.canvas.bbox("all"))
 
     def save_changes(self, module, grade_entry, status_entry):
-        """Speichert die Änderungen für ein einzelnes Modul."""
-        # Neue Werte aus den Eingabefeldern holen
         new_grade = grade_entry.get()
         new_status = status_entry.get()
 
-        # Datenbank-Update durchführen
         query = """UPDATE Module
                    SET grade = ?, status = ?
                    WHERE id = ?"""
         params = (new_grade, new_status, module.module_id)
 
         try:
-            # Wenn execute keine Ausnahme wirft, wurde das Update erfolgreich ausgeführt
             Database.execute(query, params)
             print(f"Modul {module.module_name} erfolgreich gespeichert.")
             messagebox.showinfo("Erfolg", f"Modul {module.module_name} wurde erfolgreich gespeichert.")
         except Exception as e:
-            # Fehlerbehandlung, wenn beim Update ein Fehler auftritt
             print(f"Fehler beim Speichern von Modul {module.module_name}: {str(e)}")
-            messagebox.showerror("Fehler",
-                                 f"Beim Speichern von {module.module_name} ist ein Fehler aufgetreten: {str(e)}")
+            messagebox.showerror("Fehler",f"Beim Speichern von {module.module_name} ist ein Fehler aufgetreten: {str(e)}")
 
     def save_study_time_changes(self, study_time, start_date_entry, end_date_entry):
         """Speichert die Änderungen für Studienbeginn, Studienende und gewünschten Durchschnitt."""
