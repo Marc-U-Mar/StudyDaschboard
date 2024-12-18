@@ -1,4 +1,3 @@
-
 from database import Database
 from database_entity import DatabaseEntity
 
