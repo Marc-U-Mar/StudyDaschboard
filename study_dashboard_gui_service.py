@@ -10,11 +10,9 @@ class StudyDashboardGUIService:
 
     # --- Module ---
     def get_all_modules(self):
-        """Ruft alle Module aus der Datenbank ab."""
         return Module.fetch_all()
 
     def update_module(self, module_id, grade, status):
-        """Aktualisiert ein Modul in der Datenbank."""
         query = '''UPDATE Module SET grade = ?, status = ? WHERE id = ?'''
         Database.execute(query, (grade, status, module_id))
 
@@ -24,17 +22,14 @@ class StudyDashboardGUIService:
 
     # --- Studienprogramm ---
     def get_study_program(self, program_id=1):
-        """Ruft ein Studienprogramm aus der Datenbank ab."""
         return StudyProgram.from_db(program_id)
 
     def calculate_progress(self, study_program):
-        """Berechnet den Fortschritt des Studienprogramms."""
         if study_program.total_ects == 0:
             return 0
         return (study_program.collected_ects / study_program.total_ects) * 100
 
     def update_study_program_gpa(self, study_program):
-        """Aktualisiert den aktuellen GPA des Studienprogramms."""
         study_program.update_gpa()
 
     # --- Studienzeit ---
@@ -53,7 +48,6 @@ class StudyDashboardGUIService:
         return 0
 
     def update_study_time(self, study_time_id, start_date, end_date):
-        """Aktualisiert die Studienzeit in der Datenbank."""
         study_time = StudyTime.from_db(study_time_id)
         if study_time:
             study_time.start_date = start_date
@@ -68,7 +62,6 @@ class StudyDashboardGUIService:
 
     # --- ECTS ---
     def update_collected_ects(self, study_program):
-        """Aktualisiert die gesammelten ECTS eines Studienprogramms."""
         result = Database.fetch_one('SELECT SUM(ects) FROM Module WHERE status = "Done";')
         study_program.collected_ects = result[0] or 0
         query = '''UPDATE StudyProgram SET collected_ects = ? WHERE id = ?'''

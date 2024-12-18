@@ -106,7 +106,6 @@ class StudyDashboardGUI:
         tk.Button(self.scrollable_frame, text="Beenden", command=self.root.quit).pack(pady=5)
 
     def create_module_table(self, modules, parent_frame):
-        """Erstellt die Tabelle für Module."""
         module_table = ttk.Treeview(parent_frame, columns=("Module", "ECTS", "Note", "Status"), show="headings")
         module_table.heading("Module", text="Modulname")
         module_table.heading("ECTS", text="ECTS")
