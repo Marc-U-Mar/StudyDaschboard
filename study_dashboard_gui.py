@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from study_dashboard_gui_service import StudyDashboardGUIService
 
-
+# Hauptklasse für die grafische Benutzeroberfläche des Study Dashboards
 class StudyDashboardGUI:
     def __init__(self, root):
         self.root = root
@@ -27,6 +27,7 @@ class StudyDashboardGUI:
 
         self.show_dashboard()
 
+    # Zeigt das Hauptdashboard mit allen relevanten Informationen an
     def show_dashboard(self):
         for widget in self.scrollable_frame.winfo_children():
             widget.destroy()
@@ -105,6 +106,7 @@ class StudyDashboardGUI:
         tk.Button(self.scrollable_frame, text="Daten bearbeiten", command=self.show_edit_data_form).pack(pady=5)
         tk.Button(self.scrollable_frame, text="Beenden", command=self.root.quit).pack(pady=5)
 
+    # Erstellt eine Tabelle mit Modulinformationen
     def create_module_table(self, modules, parent_frame):
         module_table = ttk.Treeview(parent_frame, columns=("Module", "ECTS", "Note", "Status"), show="headings")
         module_table.heading("Module", text="Modulname")
@@ -132,6 +134,7 @@ class StudyDashboardGUI:
             )
             treeview.column(col, width=max_width * 10)
 
+# Zeigt ein Formular zur Bearbeitung der Moduldaten an
     def show_edit_data_form(self):
         for widget in self.scrollable_frame.winfo_children():
             widget.destroy()

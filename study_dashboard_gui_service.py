@@ -4,11 +4,12 @@ from study_time import StudyTime
 from database import Database
 from datetime import datetime
 
+# Service-Klasse zur Verwaltung der Logik für die GUI
 class StudyDashboardGUIService:
     def __init__(self):
         pass
 
-    # --- Module ---
+# --- Module ---
     def get_all_modules(self):
         return Module.fetch_all()
 
@@ -20,10 +21,11 @@ class StudyDashboardGUIService:
         result = Database.fetch_one('SELECT COUNT(*) FROM Module WHERE status = ?', (status,))
         return result[0] if result else 0
 
-    # --- Studienprogramm ---
+# --- Studienprogramm ---
     def get_study_program(self, program_id=1):
         return StudyProgram.from_db(program_id)
 
+    # Berechnet den Gesamtfortschritt des Studiums in Prozent
     def calculate_progress(self, study_program):
         if study_program.total_ects == 0:
             return 0
@@ -32,10 +34,11 @@ class StudyDashboardGUIService:
     def update_study_program_gpa(self, study_program):
         study_program.update_gpa()
 
-    # --- Studienzeit ---
+# --- Studienzeit ---
     def get_study_time(self, study_time_id):
          return StudyTime.from_db(study_time_id)
 
+    # Berechnet die durchschnittliche monatliche Modullast bis zum Studienende
     def calculate_monthly_module_load(self, study_program):
         end_date = Database.fetch_one('SELECT end_date FROM StudyTime WHERE id = ?', (study_program.study_time_id,))
         if end_date:
@@ -60,7 +63,7 @@ class StudyDashboardGUIService:
             return study_time.calculate_remaining_months()
         return 0
 
-    # --- ECTS ---
+# --- ECTS ---
     def update_collected_ects(self, study_program):
         result = Database.fetch_one('SELECT SUM(ects) FROM Module WHERE status = "Done";')
         study_program.collected_ects = result[0] or 0

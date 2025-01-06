@@ -2,6 +2,7 @@ from database import Database
 from datetime import datetime
 from database_entity import DatabaseEntity
 
+# Verwaltet Informationen zur Studienzeit eines Studierenden
 class StudyTime(DatabaseEntity):
     def __init__(self, study_time_id=None, start_date=None, end_date=None, standard_duration_months=None,
                  current_semester=1):
@@ -24,6 +25,7 @@ class StudyTime(DatabaseEntity):
                          (self.start_date, self.standard_duration_months, self.current_semester, self.study_time_id))
         print(f"Study Time mit ID {self.study_time_id} wurde erfolgreich gespeichert.")
 
+    # Berechnet die verbleibenden Monate bis zum Studienende
     def calculate_remaining_months(self):
         if self.end_date:
             end_date = datetime.strptime(self.end_date, "%Y-%m-%d")

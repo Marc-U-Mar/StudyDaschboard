@@ -3,7 +3,7 @@ from database_entity import DatabaseEntity
 from module import Module
 from study_time import StudyTime
 
-
+# Repräsentiert ein Studienprogramm mit relevanten Informationen und Methoden
 class StudyProgram(DatabaseEntity):
     def __init__(self, program_id=None, program_name=None, current_gpa=0.0, total_ects=0, collected_ects=0,
                  monthly_module_load=0, study_time_id=None, gpa_goal=2.0):
@@ -30,6 +30,7 @@ class StudyProgram(DatabaseEntity):
         else:
             return None, None, None
 
+    # Berechnet den prozentualen Fortschritt der abgeschlossenen Module
     def get_module_progress(self):
         total_modules = len(Module.fetch_all())  # Alle Module abfragen
         completed_modules = len([m for m in Module.fetch_all() if m.status == "Done"])
